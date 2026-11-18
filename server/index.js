@@ -1175,7 +1175,7 @@ app.delete('/api/admin/contestants/:userId', requireAdmin, async (req, res) => {
 // 6. STATIC ASSETS & SPA SERVING
 // ==========================================
 
-const distPath = path.join(__dirname, process.env.VERCEL ? '../public' : '../client/dist');
+const distPath = path.join(__dirname, '../client/dist');
 app.use(express.static(distPath));
 
 // For SPA routing, send index.html if not an API route

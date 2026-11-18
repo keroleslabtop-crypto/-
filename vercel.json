@@ -1,11 +1,23 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "installCommand": "npm ci && npm --prefix client ci",
-  "buildCommand": "npm run build && node scripts/prepare-vercel-public.js",
-  "functions": {
-    "index.js": {
-      "includeFiles": ["server/**", "public/**"],
-      "maxDuration": 60
+  "services": {
+    "app": {
+      "root": ".",
+      "framework": "express"
+    },
+    "client": {
+      "root": "client",
+      "framework": "vite"
     }
-  }
+  },
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": { "service": "app" }
+    },
+    {
+      "source": "/(.*)",
+      "destination": { "service": "client" }
+    }
+  ]
 }

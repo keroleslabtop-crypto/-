@@ -2,7 +2,9 @@ const Database = require('better-sqlite3');
 const path = require('path');
 const bcrypt = require('bcryptjs');
 
-const dbPath = path.join(__dirname, 'competition.db');
+const dbPath = process.env.VERCEL
+  ? path.join(require('os').tmpdir(), 'competition.db')
+  : path.join(__dirname, 'competition.db');
 const db = new Database(dbPath);
 
 // Enable foreign keys and WAL mode for reliability

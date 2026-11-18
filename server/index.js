@@ -1175,7 +1175,7 @@ app.delete('/api/admin/contestants/:userId', requireAdmin, async (req, res) => {
 // 6. STATIC ASSETS & SPA SERVING
 // ==========================================
 
-const distPath = path.join(__dirname, '../client/dist');
+const distPath = path.join(__dirname, process.env.VERCEL ? '../public' : '../client/dist');
 app.use(express.static(distPath));
 
 // For SPA routing, send index.html if not an API route
@@ -1190,6 +1190,10 @@ app.use((req, res) => {
   });
 });
 
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server started on http://localhost:${PORT}`);
-});
+if (require.main === module) {
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server started on http://localhost:${PORT}`);
+  });
+}
+
+module.exports = app;

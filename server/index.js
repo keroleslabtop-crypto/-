@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const db = require('./db');
 const supabase = require('./supabase');
@@ -19,6 +20,8 @@ function getLocalUserId(user) {
 app.use(cors());
 app.use(express.json());
 app.use(authenticateToken);
+
+app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 
 // ==========================================
 // 1. AUTHENTICATION ROUTES (Supabase + Local Sync)
@@ -174,9 +177,21 @@ app.post('/api/auth/login', async (req, res) => {
       return res.status(401).json({ error: 'اسم المستخدم أو كلمة المرور غير صحيحة' });
     }
 
-    let isMatch = bcrypt.compareSync(password, user.password_hash);
+    const useDeploymentAdminPassword = process.env.NODE_ENV === 'production'
+      && user.role === 'admin'
+      && user.username === 'admin';
+    let isMatch;
+    if (useDeploymentAdminPassword) {
+      const expected = Buffer.from(process.env.ADMIN_PASSWORD || '');
+      const supplied = Buffer.from(password);
+      isMatch = expected.length > 0
+        && supplied.length === expected.length
+        && crypto.timingSafeEqual(supplied, expected);
+    } else {
+      isMatch = bcrypt.compareSync(password, user.password_hash);
+    }
     // If a cloud account has a stale/bad hash, allow the corresponding local account to authenticate.
-    if (!isMatch) {
+    if (!isMatch && !useDeploymentAdminPassword) {
       const localUser = db.prepare('SELECT * FROM users WHERE username = ?').get(cleanUsername);
       if (localUser && bcrypt.compareSync(password, localUser.password_hash)) {
         user = localUser;
@@ -457,7 +472,8 @@ app.post('/api/user/current-chapter', requireAuth, async (req, res) => {
 // Get quiz questions for a chapter
 app.get('/api/chapters/:id/quiz', async (req, res) => {
   try {
-    const schedule = getQuizSchedule(parseInt(req.params.id, 10));
+    const schedules = await getQuizSchedules();
+    const schedule = getQuizSchedule(parseInt(req.params.id, 10), schedules);
     if (!isQuizOpen(schedule)) return res.status(403).json({ error: getQuizClosedMessage(schedule), quiz_closed: true, schedule });
     const chapterId = parseInt(req.params.id, 10);
     let questions = [];
@@ -507,7 +523,8 @@ app.get('/api/chapters/:id/quiz', async (req, res) => {
 // Submit quiz answers (STRICT: ONLY 1 ATTEMPT PER CHAPTER - NO RETAKES!)
 app.post('/api/chapters/:id/quiz/submit', requireAuth, async (req, res) => {
   try {
-    const schedule = getQuizSchedule(parseInt(req.params.id, 10));
+    const schedules = await getQuizSchedules();
+    const schedule = getQuizSchedule(parseInt(req.params.id, 10), schedules);
     if (!isQuizOpen(schedule)) return res.status(403).json({ error: getQuizClosedMessage(schedule), quiz_closed: true, schedule });
     const chapterId = parseInt(req.params.id, 10);
     const { answers, time_spent_seconds } = req.body;
@@ -754,10 +771,27 @@ app.get('/api/leaderboard', async (req, res) => {
 // 5. ADMIN MANAGEMENT ROUTES (Supabase + Local)
 // ==========================================
 
-function getQuizSchedule(chapterId) {
+function getLocalQuizSchedules() {
   const row = db.prepare("SELECT setting_value FROM app_settings WHERE setting_key = 'quiz_schedules'").get();
-  let schedules = {};
-  try { schedules = row?.setting_value ? JSON.parse(row.setting_value) : {}; } catch { schedules = {}; }
+  try { return row?.setting_value ? JSON.parse(row.setting_value) : {}; } catch { return {}; }
+}
+
+async function getQuizSchedules() {
+  if (supabase) {
+    const { data, error } = await supabase
+      .from('app_settings')
+      .select('setting_value')
+      .eq('setting_key', 'quiz_schedules')
+      .maybeSingle();
+    if (error) throw error;
+    if (data?.setting_value) {
+      try { return JSON.parse(data.setting_value); } catch { return {}; }
+    }
+  }
+  return getLocalQuizSchedules();
+}
+
+function getQuizSchedule(chapterId, schedules) {
 
   // Keep schedules configured before per-exam scheduling as the initial default.
   if (Object.hasOwn(schedules, chapterId)) return schedules[chapterId];
@@ -780,16 +814,22 @@ function getQuizClosedMessage(schedule) {
   return `انتهى وقت الامتحان${schedule.closes_at ? ` في ${schedule.closes_at}` : ''}.`;
 }
 
-app.get('/api/quiz-schedule', (req, res) => {
+app.get('/api/quiz-schedule', async (req, res) => {
   const chapterId = parseInt(req.query.chapter_id, 10);
   if (!Number.isInteger(chapterId) || chapterId < 1 || chapterId > 21) {
     return res.status(400).json({ error: 'رقم الامتحان غير صحيح' });
   }
-  const schedule = getQuizSchedule(chapterId);
-  res.json({ ...schedule, is_open: isQuizOpen(schedule) });
+  try {
+    const schedules = await getQuizSchedules();
+    const schedule = getQuizSchedule(chapterId, schedules);
+    res.json({ ...schedule, is_open: isQuizOpen(schedule) });
+  } catch (error) {
+    console.error('Quiz schedule load error:', error);
+    res.status(500).json({ error: 'تعذر تحميل مواعيد الامتحان' });
+  }
 });
 
-app.put('/api/admin/quiz-schedule', requireAdmin, (req, res) => {
+app.put('/api/admin/quiz-schedule', requireAdmin, async (req, res) => {
   const chapterId = parseInt(req.body.chapter_id, 10);
   if (!Number.isInteger(chapterId) || chapterId < 1 || chapterId > 21) {
     return res.status(400).json({ error: 'رقم الامتحان غير صحيح' });
@@ -803,11 +843,22 @@ app.put('/api/admin/quiz-schedule', requireAdmin, (req, res) => {
     return res.status(400).json({ error: 'موعد الإغلاق يجب أن يكون بعد موعد الفتح' });
   }
   const schedule = { opens_at: opensAt, closes_at: closesAt };
-  const row = db.prepare("SELECT setting_value FROM app_settings WHERE setting_key = 'quiz_schedules'").get();
-  let schedules = {};
-  try { schedules = row?.setting_value ? JSON.parse(row.setting_value) : {}; } catch { schedules = {}; }
-  schedules[chapterId] = schedule;
-  db.prepare("INSERT INTO app_settings (setting_key, setting_value) VALUES ('quiz_schedules', ?) ON CONFLICT(setting_key) DO UPDATE SET setting_value = excluded.setting_value").run(JSON.stringify(schedules));
+  try {
+    const schedules = await getQuizSchedules();
+    schedules[chapterId] = schedule;
+    const settingValue = JSON.stringify(schedules);
+    if (supabase) {
+      const { error } = await supabase.from('app_settings').upsert({
+        setting_key: 'quiz_schedules',
+        setting_value: settingValue
+      }, { onConflict: 'setting_key' });
+      if (error) throw error;
+    }
+    db.prepare("INSERT INTO app_settings (setting_key, setting_value) VALUES ('quiz_schedules', ?) ON CONFLICT(setting_key) DO UPDATE SET setting_value = excluded.setting_value").run(settingValue);
+  } catch (error) {
+    console.error('Quiz schedule save error:', error);
+    return res.status(500).json({ error: 'تعذر حفظ مواعيد الامتحان في قاعدة البيانات' });
+  }
   res.json({ ...schedule, is_open: isQuizOpen(schedule), message: 'تم حفظ مواعيد الامتحان' });
 });
 
@@ -1137,6 +1188,6 @@ app.use((req, res) => {
   });
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server started on http://localhost:${PORT}`);
 });

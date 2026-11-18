@@ -105,13 +105,17 @@ function seedData() {
   // Check if admin exists
   const adminExists = db.prepare('SELECT id FROM users WHERE role = ?').get('admin');
   if (!adminExists) {
+    const adminPassword = process.env.ADMIN_PASSWORD || (process.env.NODE_ENV === 'production' ? null : 'admin123');
+    if (!adminPassword) {
+      throw new Error('Set ADMIN_PASSWORD before starting the production server.');
+    }
     const salt = bcrypt.genSaltSync(10);
-    const hash = bcrypt.hashSync('admin123', salt);
+    const hash = bcrypt.hashSync(adminPassword, salt);
     db.prepare(`
       INSERT INTO users (username, full_name, church, phone, password_hash, role)
       VALUES (?, ?, ?, ?, ?, ?)
     `).run('admin', 'مسؤول المسابقة (الأدمن)', 'كنيسة مارجرجس', '01000000000', hash, 'admin');
-    console.log('Admin user created: admin / admin123');
+    console.log('Admin user created.');
   }
 
   // Check if chapters exist

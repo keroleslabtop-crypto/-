@@ -1,6 +1,10 @@
 const jwt = require('jsonwebtoken');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'spiritual_contest_secret_key_2026';
+const JWT_SECRET = process.env.JWT_SECRET || (process.env.NODE_ENV === 'production' ? null : 'spiritual_contest_secret_key_2026');
+
+if (!JWT_SECRET) {
+  throw new Error('Set JWT_SECRET before starting the production server.');
+}
 
 function authenticateToken(req, res, next) {
   const authHeader = req.headers['authorization'];

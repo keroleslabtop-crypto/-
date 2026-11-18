@@ -44,15 +44,13 @@ export default function VideoSection({
 
     const player = playerRef.current;
     if (typeof player?.requestFullscreen !== 'function') {
-      window.open(chapter?.video_url, '_blank', 'noopener,noreferrer');
       return;
     }
 
     try {
       await player.requestFullscreen();
     } catch (error) {
-      console.error('Could not enter fullscreen:', error);
-      window.open(chapter?.video_url, '_blank', 'noopener,noreferrer');
+      console.warn('Fullscreen is unavailable for this video:', error);
     }
   };
 
@@ -108,6 +106,7 @@ export default function VideoSection({
                   src={embedUrl}
                   title={chapter?.video_title || 'فيديو شرح الأصحاح'}
                   className="w-full h-full border-0"
+                  sandbox={isGoogleDriveVideo ? 'allow-scripts allow-same-origin allow-popups' : undefined}
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; fullscreen; gyroscope; picture-in-picture; web-share"
                   allowFullScreen
                   loading="lazy"
@@ -138,25 +137,16 @@ export default function VideoSection({
           </div>
         )}
         {embedUrl && chapter?.video_url && (
-          <div className="grid grid-cols-2 gap-2 w-full max-w-4xl mt-2 sm:hidden">
+          <div className="grid grid-cols-1 gap-2 w-full max-w-4xl mt-2 sm:hidden">
             <button
               type="button"
               onClick={openFullscreen}
-              className="min-h-11 px-2 py-2 rounded-xl border border-amber-500/40 bg-slate-900 text-amber-200 text-xs font-bold flex items-center justify-center gap-1.5 active:scale-[0.98] transition"
+              className="min-h-11 w-full px-2 py-2 rounded-xl border border-amber-500/40 bg-slate-900 text-amber-200 text-xs font-bold flex items-center justify-center gap-1.5 active:scale-[0.98] transition"
               aria-label="تكبير شاشة الفيديو"
             >
               <Maximize2 className="w-4 h-4 shrink-0" />
               <span>تكبير الشاشة</span>
             </button>
-            <a
-              href={chapter.video_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="min-h-11 px-2 py-2 rounded-xl border border-amber-500/40 bg-slate-900 text-amber-200 text-xs font-bold flex items-center justify-center gap-1.5 active:scale-[0.98] transition"
-            >
-              <ExternalLink className="w-4 h-4 shrink-0" />
-              <span>الجودة والإعدادات</span>
-            </a>
           </div>
         )}
       </div>

@@ -1,5 +1,5 @@
-import React from 'react';
-import { PlayCircle, Video, ExternalLink, Edit3, Tv } from 'lucide-react';
+import React, { useRef } from 'react';
+import { PlayCircle, Video, ExternalLink, Edit3, Tv, Maximize2 } from 'lucide-react';
 
 function getEmbedUrl(url) {
   if (!url) return null;
@@ -30,9 +30,31 @@ export default function VideoSection({
   currentUser, 
   onEditInAdmin 
 }) {
+  const playerRef = useRef(null);
   const embedUrl = getEmbedUrl(chapter?.video_url);
   const isDirectVideo = embedUrl && (embedUrl.endsWith('.mp4') || embedUrl.endsWith('.webm'));
   const isGoogleDriveVideo = embedUrl?.includes('drive.google.com/file/d/');
+
+  const openFullscreen = async () => {
+    const media = playerRef.current?.querySelector('video, iframe');
+    if (media instanceof HTMLVideoElement && typeof media.webkitEnterFullscreen === 'function') {
+      media.webkitEnterFullscreen();
+      return;
+    }
+
+    const player = playerRef.current;
+    if (typeof player?.requestFullscreen !== 'function') {
+      window.open(chapter?.video_url, '_blank', 'noopener,noreferrer');
+      return;
+    }
+
+    try {
+      await player.requestFullscreen();
+    } catch (error) {
+      console.error('Could not enter fullscreen:', error);
+      window.open(chapter?.video_url, '_blank', 'noopener,noreferrer');
+    }
+  };
 
   return (
     <section 
@@ -68,7 +90,7 @@ export default function VideoSection({
       {/* Video Player Display Container */}
       <div className="p-2 sm:p-6 bg-slate-950 flex flex-col items-center justify-center">
         {embedUrl ? (
-          <div className="w-full max-w-4xl aspect-video rounded-xl sm:rounded-2xl overflow-hidden shadow-2xl bg-black border border-slate-800 relative">
+          <div ref={playerRef} className="video-player-shell w-full max-w-4xl aspect-video rounded-xl sm:rounded-2xl overflow-hidden shadow-2xl bg-black border border-slate-800 relative">
             {isDirectVideo ? (
               <video 
                 src={embedUrl} 
@@ -86,7 +108,7 @@ export default function VideoSection({
                   src={embedUrl}
                   title={chapter?.video_title || 'فيديو شرح الأصحاح'}
                   className="w-full h-full border-0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; fullscreen; gyroscope; picture-in-picture; web-share"
                   allowFullScreen
                   loading="lazy"
                 />
@@ -113,6 +135,28 @@ export default function VideoSection({
                 إضافة رابط فيديو للأصحاح الآن
               </button>
             )}
+          </div>
+        )}
+        {embedUrl && chapter?.video_url && (
+          <div className="grid grid-cols-2 gap-2 w-full max-w-4xl mt-2 sm:hidden">
+            <button
+              type="button"
+              onClick={openFullscreen}
+              className="min-h-11 px-2 py-2 rounded-xl border border-amber-500/40 bg-slate-900 text-amber-200 text-xs font-bold flex items-center justify-center gap-1.5 active:scale-[0.98] transition"
+              aria-label="تكبير شاشة الفيديو"
+            >
+              <Maximize2 className="w-4 h-4 shrink-0" />
+              <span>تكبير الشاشة</span>
+            </button>
+            <a
+              href={chapter.video_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="min-h-11 px-2 py-2 rounded-xl border border-amber-500/40 bg-slate-900 text-amber-200 text-xs font-bold flex items-center justify-center gap-1.5 active:scale-[0.98] transition"
+            >
+              <ExternalLink className="w-4 h-4 shrink-0" />
+              <span>الجودة والإعدادات</span>
+            </a>
           </div>
         )}
       </div>

@@ -304,10 +304,10 @@ export default function AdminDashboard({
         )}
 
         {/* Tabs Bar */}
-        <div className="flex border-b border-stone-200 bg-stone-100/70 px-4 pt-2 gap-2">
+        <div className="grid grid-cols-2 sm:flex sm:flex-wrap border-b border-stone-200 bg-stone-100/70 px-2 sm:px-4 pt-2 gap-1.5 sm:gap-2">
           <button
             onClick={() => setActiveTab('chapters')}
-            className={`px-4 py-2 text-xs sm:text-sm font-bold rounded-t-xl transition flex items-center gap-1.5 border-t border-x ${
+            className={`w-full sm:w-auto min-w-0 justify-center px-2 sm:px-4 py-2 text-[11px] sm:text-sm text-center leading-tight whitespace-normal sm:whitespace-nowrap font-bold rounded-t-xl transition flex items-center gap-1.5 border-t border-x ${
               activeTab === 'chapters'
                 ? 'bg-white text-amber-900 border-stone-200 -mb-px'
                 : 'bg-transparent text-stone-600 border-transparent hover:text-stone-900'
@@ -319,7 +319,7 @@ export default function AdminDashboard({
 
           <button
             onClick={() => setActiveTab('questions')}
-            className={`px-4 py-2 text-xs sm:text-sm font-bold rounded-t-xl transition flex items-center gap-1.5 border-t border-x ${
+            className={`w-full sm:w-auto min-w-0 justify-center px-2 sm:px-4 py-2 text-[11px] sm:text-sm text-center leading-tight whitespace-normal sm:whitespace-nowrap font-bold rounded-t-xl transition flex items-center gap-1.5 border-t border-x ${
               activeTab === 'questions'
                 ? 'bg-white text-amber-900 border-stone-200 -mb-px'
                 : 'bg-transparent text-stone-600 border-transparent hover:text-stone-900'
@@ -331,7 +331,7 @@ export default function AdminDashboard({
 
           <button
             onClick={() => setActiveTab('contestants')}
-            className={`px-4 py-2 text-xs sm:text-sm font-bold rounded-t-xl transition flex items-center gap-1.5 border-t border-x ${
+            className={`w-full sm:w-auto min-w-0 justify-center px-2 sm:px-4 py-2 text-[11px] sm:text-sm text-center leading-tight whitespace-normal sm:whitespace-nowrap font-bold rounded-t-xl transition flex items-center gap-1.5 border-t border-x ${
               activeTab === 'contestants'
                 ? 'bg-white text-amber-900 border-stone-200 -mb-px'
                 : 'bg-transparent text-stone-600 border-transparent hover:text-stone-900'
@@ -342,7 +342,7 @@ export default function AdminDashboard({
           </button>
           <button
             onClick={() => setActiveTab('schedule')}
-            className={`px-4 py-2 text-xs sm:text-sm font-bold rounded-t-xl transition flex items-center gap-1.5 border-t border-x ${activeTab === 'schedule' ? 'bg-white text-amber-900 border-stone-200 -mb-px' : 'bg-transparent text-stone-600 border-transparent hover:text-stone-900'}`}
+            className={`w-full sm:w-auto min-w-0 justify-center px-2 sm:px-4 py-2 text-[11px] sm:text-sm text-center leading-tight whitespace-normal sm:whitespace-nowrap font-bold rounded-t-xl transition flex items-center gap-1.5 border-t border-x ${activeTab === 'schedule' ? 'bg-white text-amber-900 border-stone-200 -mb-px' : 'bg-transparent text-stone-600 border-transparent hover:text-stone-900'}`}
           >
             <Clock className="w-4 h-4 text-amber-700" />
             <span>مواعيد الامتحان</span>

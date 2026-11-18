@@ -783,7 +783,8 @@ async function getQuizSchedules() {
       .select('setting_value')
       .eq('setting_key', 'quiz_schedules')
       .maybeSingle();
-    if (error) throw error;
+    if (error && !['PGRST205', '42P01'].includes(error.code)) throw error;
+    if (error) console.warn('Supabase app_settings table is missing; using local schedule storage until migration is applied.');
     if (data?.setting_value) {
       try { return JSON.parse(data.setting_value); } catch { return {}; }
     }
@@ -852,7 +853,8 @@ app.put('/api/admin/quiz-schedule', requireAdmin, async (req, res) => {
         setting_key: 'quiz_schedules',
         setting_value: settingValue
       }, { onConflict: 'setting_key' });
-      if (error) throw error;
+      if (error && !['PGRST205', '42P01'].includes(error.code)) throw error;
+      if (error) console.warn('Supabase app_settings table is missing; schedule changes will use local storage until migration is applied.');
     }
     db.prepare("INSERT INTO app_settings (setting_key, setting_value) VALUES ('quiz_schedules', ?) ON CONFLICT(setting_key) DO UPDATE SET setting_value = excluded.setting_value").run(settingValue);
   } catch (error) {

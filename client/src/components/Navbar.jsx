@@ -28,13 +28,15 @@ export default function Navbar({
 
   return (
     <header className="sticky top-0 z-40 bg-slate-900/95 backdrop-blur-md text-amber-50 border-b border-amber-900/40 shadow-lg">
-      <div className="max-w-7xl mx-auto px-3 sm:px-6 h-16 flex items-center justify-between gap-2">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 min-h-16 py-2 sm:py-0 sm:h-16 flex flex-wrap sm:flex-nowrap items-center justify-between gap-x-2 gap-y-2">
         
         {/* Left: Hamburger menu toggle for 21 chapters sidebar (#1 in sketch) */}
-        <div className="flex items-center gap-3">
+        <div className="order-1 flex items-center gap-2 sm:gap-3 min-w-0">
           <button
             id="chapter-menu-btn"
             onClick={onToggleSidebar}
+            aria-haspopup="dialog"
+            aria-controls="chapter-drawer"
             className="p-2 sm:px-3 sm:py-2 rounded-xl bg-slate-800 hover:bg-amber-900/50 text-amber-300 border border-amber-700/40 flex items-center gap-2 transition-all active:scale-95 shadow-sm hover:shadow"
             title="قائمة الأصحاحات الـ 21"
             aria-label="قائمة الأصحاحات الـ 21"
@@ -58,21 +60,21 @@ export default function Navbar({
         </div>
 
         {/* Center: #6 Leaderboard & #5 Current Chapter button */}
-        <div className="flex items-center gap-2 sm:gap-3">
+        <div className="order-3 w-full sm:order-none sm:w-auto flex items-center justify-between sm:justify-center gap-2 sm:gap-3">
           {/* #6 Leaderboard Button (ترتيب المتصدرين بالدرجات ثم السرعة) */}
           <button
             onClick={onOpenLeaderboard}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-600/30 to-amber-500/20 hover:from-amber-600/50 hover:to-amber-500/30 border border-amber-500/40 text-amber-200 font-semibold text-xs sm:text-sm transition-all hover:scale-105 shadow-sm active:scale-95"
+            className="flex-1 sm:flex-none justify-center min-w-0 flex items-center gap-1.5 px-2.5 sm:px-3 py-2 sm:py-1.5 rounded-xl bg-gradient-to-r from-amber-600/30 to-amber-500/20 hover:from-amber-600/50 hover:to-amber-500/30 border border-amber-500/40 text-amber-200 font-semibold text-xs sm:text-sm transition-all sm:hover:scale-105 shadow-sm active:scale-95"
             title="لوحة الشرف وترتيب المتصدرين"
           >
             <Trophy className="w-4 h-4 text-amber-400 animate-pulse" />
-            <span className="hidden xs:inline">المتصدرون</span>
+            <span className="inline">المتصدرون</span>
           </button>
 
           {/* #5 Resume / Current Chapter Button (زر الأصحاح المتوقف عنده) */}
           <button
             onClick={() => onJumpToCurrentChapter(lastChapter)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/50 text-amber-300 font-bold text-xs sm:text-sm transition-all active:scale-95 hover:shadow-md"
+            className="flex-1 sm:flex-none justify-center min-w-0 flex items-center gap-1.5 px-2.5 sm:px-3 py-2 sm:py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/50 text-amber-300 font-bold text-xs sm:text-sm transition-all active:scale-95 hover:shadow-md"
             title={`الانتقال إلى الأصحاح الذي توقفت عنده (أصحاح ${lastChapter})`}
           >
             <Bookmark className="w-4 h-4 text-amber-400 fill-amber-400/30" />
@@ -82,7 +84,7 @@ export default function Navbar({
         </div>
 
         {/* Right: #7 Login / User Profile & Admin menu (قائمة تسجيل الدخول) */}
-        <div className="relative">
+        <div className="order-2 ml-auto sm:order-none relative shrink-0">
           {currentUser ? (
             <div className="relative">
               <button
@@ -115,7 +117,7 @@ export default function Navbar({
                     className="fixed inset-0 z-30" 
                     onClick={() => setProfileDropdownOpen(false)} 
                   />
-                  <div className="absolute left-0 mt-2 w-56 rounded-2xl bg-slate-900 border border-amber-700/40 shadow-2xl py-2 z-40 text-stone-200 divide-y divide-slate-800 animate-in fade-in slide-in-from-top-2 duration-150">
+                  <div className="absolute right-0 mt-2 w-56 rounded-2xl bg-slate-900 border border-amber-700/40 shadow-2xl py-2 z-40 text-stone-200 divide-y divide-slate-800 animate-in fade-in slide-in-from-top-2 duration-150 profile-dropdown-enter">
                     <div className="px-4 py-2 text-right">
                       <p className="text-xs text-amber-400/80">مرحباً بك،</p>
                       <p className="font-bold text-sm text-amber-200 truncate">{currentUser.full_name}</p>

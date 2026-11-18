@@ -12,23 +12,23 @@ export default function ChapterDrawer({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-hidden">
+    <div className="fixed inset-0 z-50 overflow-hidden" role="dialog" aria-modal="true" aria-labelledby="chapter-drawer-title">
       {/* Backdrop with click outside */}
       <div 
-        className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm transition-opacity"
+        className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm drawer-backdrop-enter"
         onClick={onClose}
         aria-hidden="true"
       />
 
-      <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
-        <div className="w-screen max-w-md bg-slate-900 border-l border-amber-800/40 shadow-2xl flex flex-col text-slate-100">
+      <div className="fixed inset-y-0 right-0 w-[88vw] max-w-md flex">
+        <div id="chapter-drawer" className="chapter-drawer-panel w-full h-full bg-slate-900 border-l border-amber-800/40 shadow-2xl flex flex-col text-slate-100">
           
           {/* Drawer Header */}
           <div className="p-4 bg-slate-950/80 border-b border-amber-900/40 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="text-xl text-amber-400">✝</span>
               <div>
-                <h2 className="text-base font-bold text-amber-200">فهرس الأصحاحات الـ ٢١</h2>
+                <h2 id="chapter-drawer-title" className="text-base font-bold text-amber-200">فهرس الأصحاحات الـ ٢١</h2>
                 <p className="text-xs text-amber-400/70">اختر أصحاحاً للقراءة والمشاهدة والاختبار</p>
               </div>
             </div>
@@ -42,7 +42,7 @@ export default function ChapterDrawer({
           </div>
 
           {/* Chapters List */}
-          <div className="flex-1 overflow-y-auto p-3 space-y-2 overscroll-contain">
+          <div className="flex-1 min-h-0 overflow-y-auto p-3 space-y-2 overscroll-contain">
             {chapters.map((ch) => {
               const isActive = ch.id === activeChapterId;
               const isLastProgress = ch.id === lastChapterId;

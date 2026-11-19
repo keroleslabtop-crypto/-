@@ -316,7 +316,7 @@ export default function App() {
         <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2 text-amber-300 font-bold">
             <span className="text-lg">✝</span>
-            <span>مسابقة دراسة الإنجيل المقدس - ٢١ أصحاح</span>
+            <span>دراسة في سفر القضاة - ٢١ أصحاح</span>
           </div>
 
           <div className="text-stone-500 text-[11px]">

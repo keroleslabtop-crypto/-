@@ -52,7 +52,7 @@ export default function Navbar({
             </div>
             <div className="hidden md:block">
               <h1 className="text-sm font-extrabold text-amber-200 tracking-wide leading-tight">
-                مسابقة الكتاب المقدس
+                دراسة في سفر القضاة
               </h1>
               <p className="text-[11px] text-amber-400/80">دراسة وتأمل واختبارات الأصحاحات</p>
             </div>

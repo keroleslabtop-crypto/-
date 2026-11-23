@@ -137,7 +137,7 @@ export default function LeaderboardModal({
                 return (
                   <div
                     key={item.user_id}
-                    className={`p-3.5 sm:p-4 rounded-2xl border transition-all flex items-center justify-between gap-3 ${
+                    className={`p-3 sm:p-4 rounded-2xl border transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3 ${
                       isCurrentUser
                         ? 'bg-amber-100/90 border-amber-500 ring-2 ring-amber-400 shadow-md'
                         : isTop1
@@ -150,7 +150,7 @@ export default function LeaderboardModal({
                     }`}
                   >
                     {/* Rank & User Info */}
-                    <div className="flex items-center gap-3 min-w-0">
+                    <div className="flex items-center gap-2 sm:gap-3 min-w-0 w-full sm:w-auto">
                       {/* Rank Icon / Badge */}
                       <div className="w-9 h-9 rounded-xl flex items-center justify-center font-black text-sm shrink-0">
                         {isTop1 ? (
@@ -167,9 +167,9 @@ export default function LeaderboardModal({
                       </div>
 
                       {/* Contestant details */}
-                      <div className="min-w-0">
+                      <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
-                          <h4 className="text-xs sm:text-sm font-bold text-stone-900 truncate">
+                          <h4 className="text-sm sm:text-sm font-bold text-stone-900 whitespace-normal break-words leading-snug">
                             {item.full_name}
                           </h4>
                           {isCurrentUser && (
@@ -189,7 +189,7 @@ export default function LeaderboardModal({
                     </div>
 
                     {/* Score, Time & Completed Chapters */}
-                    <div className="flex items-center gap-2 sm:gap-4 shrink-0 text-left">
+                    <div className="grid grid-cols-2 sm:flex items-center gap-1.5 sm:gap-4 w-full sm:w-auto shrink-0 text-left">
                       {/* Completed Chapters */}
                       <div className="text-center hidden sm:block">
                         <span className="text-[10px] text-stone-400 block">الأصحاحات</span>
@@ -199,9 +199,9 @@ export default function LeaderboardModal({
                       </div>
 
                       {/* Speed / Total Time */}
-                      <div className="text-center bg-white/70 px-2.5 py-1 rounded-xl border border-stone-200">
-                        <span className="text-[10px] text-stone-400 block flex items-center justify-center gap-0.5">
-                          <Clock className="w-2.5 h-2.5 text-sky-600" />
+                      <div className="text-center bg-white/70 px-1.5 sm:px-2.5 py-1 rounded-xl border border-stone-200">
+                        <span className="text-[9px] sm:text-[10px] text-stone-400 block flex items-center justify-center gap-0.5">
+                          <Clock className="w-2 h-2 sm:w-2.5 sm:h-2.5 text-sky-600" />
                           السرعة
                         </span>
                         <span className="text-xs font-mono font-bold text-sky-800">
@@ -210,9 +210,9 @@ export default function LeaderboardModal({
                       </div>
 
                       {/* Total Score */}
-                      <div className="text-center bg-amber-500/15 px-3 py-1 rounded-xl border border-amber-400/40 min-w-[70px]">
-                        <span className="text-[10px] text-amber-900/80 block font-semibold">المجموع</span>
-                        <span className="text-sm sm:text-base font-black text-amber-800">
+                      <div className="text-center bg-amber-500/15 px-2 sm:px-3 py-1 rounded-xl border border-amber-400/40 min-w-[62px] sm:min-w-[70px]">
+                        <span className="text-[9px] sm:text-[10px] text-amber-900/80 block font-semibold">المجموع</span>
+                        <span className="text-sm sm:text-base font-black text-amber-800 whitespace-nowrap">
                           {item.total_score} <span className="text-[10px] font-normal">نقطة</span>
                         </span>
                       </div>

@@ -86,14 +86,14 @@ export default function VideoSection({
       </div>
 
       {/* Video Player Display Container */}
-      <div className="p-2 sm:p-6 bg-slate-950 flex flex-col items-center justify-center">
+      <div className="p-0 sm:p-6 bg-slate-950 flex flex-col items-center justify-center">
         {embedUrl ? (
-          <div ref={playerRef} className="video-player-shell w-full max-w-4xl aspect-video rounded-xl sm:rounded-2xl overflow-hidden shadow-2xl bg-black border border-slate-800 relative">
+          <div ref={playerRef} className="video-player-shell w-full max-w-4xl aspect-[16/9] rounded-lg sm:rounded-2xl overflow-hidden shadow-2xl bg-black border border-slate-800 relative">
             {isDirectVideo ? (
               <video 
                 src={embedUrl} 
                 controls 
-                className="w-full h-full object-contain"
+                className="absolute inset-0 w-full h-full object-contain"
                 preload="metadata"
                 playsInline
                 webkit-playsinline="true"
@@ -105,7 +105,7 @@ export default function VideoSection({
                 <iframe
                   src={embedUrl}
                   title={chapter?.video_title || 'فيديو شرح الأصحاح'}
-                  className="w-full h-full border-0"
+                  className="absolute inset-0 w-full h-full border-0"
                   sandbox={isGoogleDriveVideo ? 'allow-scripts allow-same-origin allow-popups' : undefined}
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; fullscreen; gyroscope; picture-in-picture; web-share"
                   allowFullScreen

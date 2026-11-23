@@ -109,7 +109,7 @@ export default function VideoSection({
                   sandbox={isGoogleDriveVideo ? 'allow-scripts allow-same-origin allow-popups' : undefined}
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; fullscreen; gyroscope; picture-in-picture; web-share"
                   allowFullScreen
-                  loading="lazy"
+                  loading={isGoogleDriveVideo ? 'eager' : 'lazy'}
                 />
               </>
             )}

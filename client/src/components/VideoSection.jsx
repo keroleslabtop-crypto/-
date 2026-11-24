@@ -1,5 +1,19 @@
 import React, { useRef } from 'react';
-import { PlayCircle, Video, ExternalLink, Edit3, Tv, Maximize2 } from 'lucide-react';
+import { PlayCircle, Video, Edit3, Tv, Maximize2 } from 'lucide-react';
+
+function configureYouTubeEmbed(url) {
+  if (!url || !/youtube(?:-nocookie)?\.com\/embed\//i.test(url)) return url;
+  try {
+    const parsed = new URL(url);
+    parsed.searchParams.set('rel', '0');
+    parsed.searchParams.set('playsinline', '1');
+    parsed.searchParams.set('iv_load_policy', '3');
+    parsed.searchParams.set('modestbranding', '1');
+    return parsed.toString();
+  } catch {
+    return url;
+  }
+}
 
 function getEmbedUrl(url) {
   if (!url) return null;
@@ -8,12 +22,12 @@ function getEmbedUrl(url) {
   // YouTube watch link
   const ytWatchMatch = trimmed.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i);
   if (ytWatchMatch && ytWatchMatch[1]) {
-    return `https://www.youtube.com/embed/${ytWatchMatch[1]}?rel=0`;
+    return configureYouTubeEmbed(`https://www.youtube.com/embed/${ytWatchMatch[1]}`);
   }
 
   // Already embed format
   if (trimmed.includes('youtube.com/embed/')) {
-    return trimmed;
+    return configureYouTubeEmbed(trimmed);
   }
 
   // Use Drive's embedded player rather than its share page.
@@ -157,17 +171,6 @@ export default function VideoSection({
           <PlayCircle className="w-3.5 h-3.5" />
           تأمل كلمة الله وسلّم كل فكر لطاعة المسيح
         </span>
-        {chapter?.video_url && !isGoogleDriveVideo && (
-          <a 
-            href={chapter.video_url} 
-            target="_blank" 
-            rel="noopener noreferrer" 
-            className="flex items-center gap-1 text-sky-400 hover:underline"
-          >
-            <span>فتح في نافذة جديدة</span>
-            <ExternalLink className="w-3 h-3" />
-          </a>
-        )}
       </div>
     </section>
   );

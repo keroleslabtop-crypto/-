@@ -6,6 +6,7 @@ import QuizModal from './components/QuizModal';
 import LeaderboardModal from './components/LeaderboardModal';
 import AuthModal from './components/AuthModal';
 import AdminDashboard from './components/AdminDashboard';
+import VideoSection from './components/VideoSection';
 import { apiRequest, getToken, setToken, setSavedUser } from './api';
 import { 
   Award, 
@@ -208,6 +209,15 @@ export default function App() {
 
         {/* 2. Chapter Written Text Box (#2 in sketch: الاصحاح مكتوب) */}
         <ChapterReader
+          chapter={activeChapter}
+          currentUser={currentUser}
+          onEditInAdmin={(cid) => {
+            setAdminModalOpen(true);
+          }}
+        />
+
+        {/* 3. Chapter Video (#3 in sketch: between the verse text and quiz) */}
+        <VideoSection
           chapter={activeChapter}
           currentUser={currentUser}
           onEditInAdmin={(cid) => {

@@ -429,13 +429,13 @@ export default function AdminDashboard({
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className="block text-xs font-semibold text-stone-600 mb-1">
-                        رابط الفيديو (يوتيوب، فيديو مباشر، أو مسار خاص من Supabase)
+                        رابط الفيديو (Google Drive، يوتيوب، أو فيديو مباشر)
                       </label>
                       <input
                         type="url"
                         value={editVideoUrl}
                         onChange={(e) => setEditVideoUrl(e.target.value)}
-                        placeholder="مثال: supabase://chapter-1.mp4 أو رابط فيديو"
+                        placeholder="مثال: https://drive.google.com/file/d/FILE_ID/view"
                         className="w-full px-3 py-2 rounded-xl border border-stone-300 bg-white text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
                       />
                       <p className="mt-1 text-[11px] leading-relaxed text-stone-500">

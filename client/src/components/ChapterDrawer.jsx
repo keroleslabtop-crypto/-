@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, CheckCircle2, BookOpen, Clock, Award, PlayCircle } from 'lucide-react';
+import { X, CheckCircle2, BookOpen, Clock, Award } from 'lucide-react';
 
 export default function ChapterDrawer({
   isOpen,
@@ -101,12 +101,6 @@ export default function ChapterDrawer({
                     )}
 
                     <div className="flex items-center gap-3 mt-1.5 text-[11px] text-slate-400">
-                      {ch.has_video && (
-                        <span className="flex items-center gap-1 text-sky-400">
-                          <PlayCircle className="w-3 h-3" />
-                          فيديو
-                        </span>
-                      )}
                       <span className="flex items-center gap-1 text-amber-300/80">
                         <Award className="w-3 h-3" />
                         {ch.question_count} أسئلة

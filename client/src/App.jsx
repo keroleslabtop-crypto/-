@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import Navbar from './components/Navbar';
 import ChapterDrawer from './components/ChapterDrawer';
 import ChapterReader from './components/ChapterReader';
-import VideoSection from './components/VideoSection';
 import QuizModal from './components/QuizModal';
 import LeaderboardModal from './components/LeaderboardModal';
 import AuthModal from './components/AuthModal';
@@ -10,7 +9,6 @@ import AdminDashboard from './components/AdminDashboard';
 import { apiRequest, getToken, setToken, setSavedUser } from './api';
 import { 
   Award, 
-  PlayCircle, 
   CheckCircle2, 
   Clock, 
   HelpCircle, 
@@ -210,15 +208,6 @@ export default function App() {
 
         {/* 2. Chapter Written Text Box (#2 in sketch: الاصحاح مكتوب) */}
         <ChapterReader
-          chapter={activeChapter}
-          currentUser={currentUser}
-          onEditInAdmin={(cid) => {
-            setAdminModalOpen(true);
-          }}
-        />
-
-        {/* 3. Video Watching Area (#3 in sketch: مكان مشاهدة فيديو) */}
-        <VideoSection
           chapter={activeChapter}
           currentUser={currentUser}
           onEditInAdmin={(cid) => {

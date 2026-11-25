@@ -1,5 +1,6 @@
-import React, { useRef } from 'react';
-import { PlayCircle, Video, Edit3, Tv, Maximize2, ExternalLink } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { PlayCircle, Video, Edit3, Tv, Maximize2 } from 'lucide-react';
+import { apiRequest } from '../api';
 
 function configureYouTubeEmbed(url) {
   if (!url || !/youtube(?:-nocookie)?\.com\/embed\//i.test(url)) return url;
@@ -45,8 +46,46 @@ export default function VideoSection({
   onEditInAdmin 
 }) {
   const playerRef = useRef(null);
-  const embedUrl = getEmbedUrl(chapter?.video_url);
-  const isDirectVideo = embedUrl && (embedUrl.endsWith('.mp4') || embedUrl.endsWith('.webm'));
+  const isPrivateSupabaseVideo = chapter?.video_url?.startsWith('supabase://');
+  const [privateVideoUrl, setPrivateVideoUrl] = useState('');
+  const [privateVideoError, setPrivateVideoError] = useState('');
+  const [privateVideoLoading, setPrivateVideoLoading] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    if (!isPrivateSupabaseVideo || !chapter?.id) {
+      setPrivateVideoUrl('');
+      setPrivateVideoError('');
+      setPrivateVideoLoading(false);
+      return () => { active = false; };
+    }
+
+    setPrivateVideoUrl('');
+    setPrivateVideoError('');
+    setPrivateVideoLoading(true);
+    apiRequest(`/chapters/${chapter.id}/video-url`)
+      .then((result) => {
+        if (active) setPrivateVideoUrl(result.video_url || '');
+      })
+      .catch((error) => {
+        if (active) setPrivateVideoError(error.message || 'تعذر تحميل الفيديو الخاص');
+      })
+      .finally(() => {
+        if (active) setPrivateVideoLoading(false);
+      });
+
+    return () => { active = false; };
+  }, [chapter?.id, chapter?.video_url, isPrivateSupabaseVideo]);
+
+  const embedUrl = getEmbedUrl(isPrivateSupabaseVideo ? privateVideoUrl : chapter?.video_url);
+  const isDirectVideo = (() => {
+    if (!embedUrl) return false;
+    try {
+      return /\.(mp4|webm)$/i.test(new URL(embedUrl).pathname);
+    } catch {
+      return /\.(mp4|webm)(?:\?|$)/i.test(embedUrl);
+    }
+  })();
   const isGoogleDriveVideo = embedUrl?.includes('drive.google.com/file/d/');
   const isProtonDriveVideo = (() => {
     try {
@@ -122,18 +161,10 @@ export default function VideoSection({
                 متصفحك لا يدعم تشغيل هذا الفيديو.
               </video>
             ) : isProtonDriveVideo ? (
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-slate-900 px-5 text-center">
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-slate-900 px-5 text-center">
                 <Video className="h-12 w-12 text-amber-400" />
-                <p className="text-sm font-semibold text-amber-100">هذا الفيديو يُعرض على Proton Drive</p>
-                <a
-                  href={embedUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-amber-500/50 bg-amber-500/15 px-5 py-3 font-bold text-amber-200 transition hover:bg-amber-500/25"
-                >
-                  <span>مشاهدة الفيديو على Proton Drive</span>
-                  <ExternalLink className="h-4 w-4" />
-                </a>
+                <p className="text-sm font-semibold text-amber-100">رابط Proton Drive لا يدعم تشغيل الفيديو داخل الموقع.</p>
+                <p className="text-xs text-slate-300">استخدم تخزين Supabase الخاص لتشغيل الفيديو داخل الموقع.</p>
               </div>
             ) : (
               <>
@@ -148,6 +179,13 @@ export default function VideoSection({
                 />
               </>
             )}
+          </div>
+        ) : isPrivateSupabaseVideo ? (
+          <div className="w-full max-w-4xl aspect-[16/9] rounded-lg sm:rounded-2xl bg-slate-900 border border-slate-800 flex flex-col items-center justify-center gap-3 p-5 text-center">
+            <Video className="w-10 h-10 text-amber-400" />
+            <p className="text-sm font-semibold text-amber-100">
+              {privateVideoLoading ? 'جاري تجهيز الفيديو...' : privateVideoError || 'تعذر تحميل الفيديو الخاص'}
+            </p>
           </div>
         ) : (
           <div className="w-full max-w-2xl py-12 px-6 rounded-2xl bg-slate-900/80 border border-dashed border-amber-800/40 text-center flex flex-col items-center gap-3">

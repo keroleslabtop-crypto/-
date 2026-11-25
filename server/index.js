@@ -469,6 +469,50 @@ app.post('/api/user/current-chapter', requireAuth, async (req, res) => {
 // 3. QUIZ ROUTES (With NO RETAKE Rule & Supabase Sync)
 // ==========================================
 
+// Return a short-lived playback URL for a private Supabase Storage video.
+app.get('/api/chapters/:id/video-url', requireAuth, async (req, res) => {
+  try {
+    if (!supabase) {
+      return res.status(503).json({ error: 'تخزين الفيديو الخاص غير متاح حالياً' });
+    }
+
+    const chapterId = Number.parseInt(req.params.id, 10);
+    if (!Number.isInteger(chapterId)) {
+      return res.status(400).json({ error: 'رقم الأصحاح غير صحيح' });
+    }
+
+    const { data: chapter, error: chapterError } = await supabase
+      .from('chapters')
+      .select('video_url')
+      .eq('id', chapterId)
+      .single();
+
+    if (chapterError || !chapter?.video_url?.startsWith('supabase://')) {
+      return res.status(404).json({ error: 'لم يتم إعداد فيديو خاص لهذا الأصحاح' });
+    }
+
+    const objectPath = chapter.video_url.slice('supabase://'.length).replace(/^\/+/, '');
+    if (!objectPath || objectPath.split('/').some((part) => part === '..')) {
+      return res.status(400).json({ error: 'مسار ملف الفيديو غير صحيح' });
+    }
+
+    const bucket = process.env.SUPABASE_VIDEO_BUCKET || 'videos';
+    const { data, error } = await supabase.storage
+      .from(bucket)
+      .createSignedUrl(objectPath, 60 * 60);
+
+    if (error || !data?.signedUrl) {
+      console.error('Private video URL error:', error);
+      return res.status(404).json({ error: 'تعذر تجهيز رابط مشاهدة الفيديو' });
+    }
+
+    return res.json({ video_url: data.signedUrl });
+  } catch (error) {
+    console.error('Private video playback error:', error);
+    return res.status(500).json({ error: 'حدث خطأ أثناء تجهيز الفيديو للمشاهدة' });
+  }
+});
+
 // Get quiz questions for a chapter
 app.get('/api/chapters/:id/quiz', async (req, res) => {
   try {

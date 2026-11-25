@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { PlayCircle, Video, Edit3, Tv, Maximize2 } from 'lucide-react';
+import { PlayCircle, Video, Edit3, Tv, Maximize2, ExternalLink } from 'lucide-react';
 
 function configureYouTubeEmbed(url) {
   if (!url || !/youtube(?:-nocookie)?\.com\/embed\//i.test(url)) return url;
@@ -48,6 +48,13 @@ export default function VideoSection({
   const embedUrl = getEmbedUrl(chapter?.video_url);
   const isDirectVideo = embedUrl && (embedUrl.endsWith('.mp4') || embedUrl.endsWith('.webm'));
   const isGoogleDriveVideo = embedUrl?.includes('drive.google.com/file/d/');
+  const isProtonDriveVideo = (() => {
+    try {
+      return new URL(embedUrl).hostname === 'drive.proton.me';
+    } catch {
+      return false;
+    }
+  })();
 
   const openFullscreen = async () => {
     const media = playerRef.current?.querySelector('video, iframe');
@@ -114,6 +121,20 @@ export default function VideoSection({
               >
                 متصفحك لا يدعم تشغيل هذا الفيديو.
               </video>
+            ) : isProtonDriveVideo ? (
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-slate-900 px-5 text-center">
+                <Video className="h-12 w-12 text-amber-400" />
+                <p className="text-sm font-semibold text-amber-100">هذا الفيديو يُعرض على Proton Drive</p>
+                <a
+                  href={embedUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-amber-500/50 bg-amber-500/15 px-5 py-3 font-bold text-amber-200 transition hover:bg-amber-500/25"
+                >
+                  <span>مشاهدة الفيديو على Proton Drive</span>
+                  <ExternalLink className="h-4 w-4" />
+                </a>
+              </div>
             ) : (
               <>
                 <iframe

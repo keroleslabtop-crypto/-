@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { PlayCircle, Video, Edit3, Tv, Maximize2 } from 'lucide-react';
+import { PlayCircle, Video, Edit3, Tv, Maximize2, Pause, Play, Volume2, VolumeX } from 'lucide-react';
 import { apiRequest } from '../api';
 
 function configureYouTubeEmbed(url) {
@@ -61,6 +61,10 @@ export default function VideoSection({
   const [privateVideoUrl, setPrivateVideoUrl] = useState('');
   const [privateVideoError, setPrivateVideoError] = useState('');
   const [privateVideoLoading, setPrivateVideoLoading] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
 
   useEffect(() => {
     let active = true;
@@ -105,6 +109,48 @@ export default function VideoSection({
       return false;
     }
   })();
+
+  useEffect(() => {
+    setIsPlaying(false);
+    setCurrentTime(0);
+    setDuration(0);
+  }, [embedUrl]);
+
+  const formatTime = (seconds) => {
+    if (!Number.isFinite(seconds) || seconds < 0) return '0:00';
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = Math.floor(seconds % 60);
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
+
+  const togglePlayback = async () => {
+    const video = playerRef.current?.querySelector('video');
+    if (!video) return;
+    if (video.paused) {
+      try {
+        await video.play();
+      } catch (error) {
+        console.warn('Unable to start video playback:', error);
+      }
+    } else {
+      video.pause();
+    }
+  };
+
+  const toggleMute = () => {
+    const video = playerRef.current?.querySelector('video');
+    if (!video) return;
+    video.muted = !video.muted;
+    setIsMuted(video.muted);
+  };
+
+  const seekVideo = (event) => {
+    const video = playerRef.current?.querySelector('video');
+    if (!video) return;
+    const nextTime = Number(event.target.value);
+    video.currentTime = nextTime;
+    setCurrentTime(nextTime);
+  };
 
   const openFullscreen = async () => {
     const media = playerRef.current?.querySelector('video, iframe');
@@ -159,15 +205,21 @@ export default function VideoSection({
       {/* Video Player Display Container */}
       <div className="p-0 sm:p-6 bg-slate-950 flex flex-col items-center justify-center">
         {embedUrl ? (
+          <>
           <div ref={playerRef} className="video-player-shell w-full max-w-[430px] aspect-[9/16] sm:max-w-4xl sm:aspect-[16/9] rounded-lg sm:rounded-2xl overflow-hidden shadow-2xl bg-black border border-slate-800 relative">
             {isDirectVideo ? (
               <video 
                 src={embedUrl} 
-                controls 
                 className="absolute inset-0 w-full h-full object-contain"
                 preload="metadata"
                 playsInline
                 webkit-playsinline="true"
+                onLoadedMetadata={(event) => setDuration(event.currentTarget.duration || 0)}
+                onTimeUpdate={(event) => setCurrentTime(event.currentTarget.currentTime || 0)}
+                onPlay={() => setIsPlaying(true)}
+                onPause={() => setIsPlaying(false)}
+                onEnded={() => setIsPlaying(false)}
+                onClick={togglePlayback}
               >
                 متصفحك لا يدعم تشغيل هذا الفيديو.
               </video>
@@ -191,6 +243,42 @@ export default function VideoSection({
               </>
             )}
           </div>
+          {isDirectVideo ? (
+            <div className="w-full max-w-[430px] sm:max-w-4xl mt-2 rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-amber-100">
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={togglePlayback}
+                  className="min-w-10 min-h-10 rounded-lg bg-amber-500/15 text-amber-300 flex items-center justify-center hover:bg-amber-500/25 active:scale-95 transition"
+                  aria-label={isPlaying ? 'إيقاف مؤقت' : 'تشغيل الفيديو'}
+                >
+                  {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
+                </button>
+                <span className="min-w-[84px] text-center text-[11px] font-mono text-slate-300">
+                  {formatTime(currentTime)} / {formatTime(duration)}
+                </span>
+                <input
+                  type="range"
+                  min="0"
+                  max={duration || 0}
+                  step="0.1"
+                  value={Math.min(currentTime, duration || 0)}
+                  onChange={seekVideo}
+                  className="min-w-0 flex-1 accent-amber-500"
+                  aria-label="التقدم في الفيديو"
+                />
+                <button
+                  type="button"
+                  onClick={toggleMute}
+                  className="min-w-10 min-h-10 rounded-lg hover:bg-slate-800 flex items-center justify-center active:scale-95 transition"
+                  aria-label={isMuted ? 'تشغيل الصوت' : 'كتم الصوت'}
+                >
+                  {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+                </button>
+              </div>
+            </div>
+          ) : null}
+          </>
         ) : isPrivateSupabaseVideo ? (
           <div className="w-full max-w-[430px] aspect-[9/16] sm:max-w-4xl sm:aspect-[16/9] rounded-lg sm:rounded-2xl bg-slate-900 border border-slate-800 flex flex-col items-center justify-center gap-3 p-5 text-center">
             <Video className="w-10 h-10 text-amber-400" />
